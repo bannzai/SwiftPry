@@ -5,6 +5,12 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftPry",
+    products: [
+        .library(
+            name: "SwiftPry",
+            targets: ["SwiftPry"]
+        ),
+    ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
@@ -14,9 +20,12 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "SwiftPry",
+            dependencies: ["SwiftPryCore"]),
+        .target(
+            name: "SwiftPryCore",
             dependencies: []),
         .testTarget(
-            name: "SwiftPryTests",
-            dependencies: ["SwiftPry"]),
+            name: "SwiftPryCoreTests",
+            dependencies: ["SwiftPryCore"]),
     ]
 )
