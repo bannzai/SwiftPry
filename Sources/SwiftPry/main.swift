@@ -1,3 +1,3 @@
 import SwiftPryCore
-LLDBBridge().exec()
+SwiftBulid().exec()
 print("Hello, world!")
