@@ -1,3 +1,5 @@
 import SwiftPryCore
-SwiftBulid().exec()
+SwiftBulid().exec { (binaryPath) in
+    print(binaryPath)
+}
 print("Hello, world!")

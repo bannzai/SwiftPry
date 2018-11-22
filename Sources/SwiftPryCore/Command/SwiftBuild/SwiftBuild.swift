@@ -16,11 +16,16 @@ public struct SwiftBulid {
         
     }
     
-    public func exec() {
+    public func exec(builtdBinaryPath: @escaping (String) -> Void) {
         main.currentdirectory = SwiftBulidTestValue.swiftCodePath
         let command = main.runAsync(bash: "swift build")
         command.stdout.onStringOutput { (text) in
             print(text)
+            if text.hasPrefix("Linking ./") {
+                let head = text.index(text.startIndex, offsetBy: "Linking ./".count)
+                let subString = text[head...]
+                builtdBinaryPath(main.currentdirectory + String(subString))
+            }
         }
         command.stderror.onStringOutput { (text) in
             print(text)
@@ -30,6 +35,5 @@ public struct SwiftBulid {
         } catch {
             print("Can not finish process of `swift build`")
         }
-        print(main.run(bash: "rm -rf .build").stdout)
     }
 }
