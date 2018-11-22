@@ -1,3 +1,3 @@
 import SwiftPryCore
-LLDBBridge()
+LLDBBridge().exec()
 print("Hello, world!")
