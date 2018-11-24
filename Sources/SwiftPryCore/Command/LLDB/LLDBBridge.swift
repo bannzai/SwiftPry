@@ -4,12 +4,14 @@ import SwiftShell
 
 public struct LLDBBridge {
     let binaryPath: String
+    let context: CustomContext
     public init(binaryPath: String) {
         self.binaryPath = binaryPath
+        self.context = CustomContext(main)
     }
     
     public func launch() {
-        let command = main.runAsync(bash: "lldb")
+        let command = context.runAsync(bash: "lldb")
         command.stdout.onStringOutput { (text) in
             print(text)
         }

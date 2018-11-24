@@ -1,11 +1,10 @@
 import SwiftPryCore
 import Foundation
 
-//SwiftBulid().exec { (binaryPath) in
-//    print(binaryPath)
-//}
-//LLDBBridge(binaryPath: "").launch()
-var hoge: String? = readLine()!
+var hoge: String? = nil
+SwiftBulid().exec { (binaryPath) in
+    LLDBBridge(binaryPath: binaryPath).launch()
+}
 while readLine() == nil {
     hoge = readLine()
 }

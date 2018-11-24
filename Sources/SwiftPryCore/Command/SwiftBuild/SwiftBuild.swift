@@ -32,6 +32,7 @@ public struct SwiftBulid {
         }
         do {
             try command.finish()
+            main.run(bash: "rm -rf .build") // TODO: Remove
         } catch {
             print("Can not finish process of `swift build`")
         }
