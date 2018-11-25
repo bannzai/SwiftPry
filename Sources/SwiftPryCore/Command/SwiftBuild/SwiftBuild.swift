@@ -16,6 +16,23 @@ public struct SwiftBulid {
         
     }
     
+    public func exec() -> String {
+        main.currentdirectory = SwiftBulidTestValue.swiftCodePath
+        let output = main.run(bash: "swift build")
+        return output
+            .stdout
+            .components(separatedBy: "\n")
+            .filter {
+                $0.hasPrefix("Linking ./")
+            }
+            .map { text in
+                let head = text.index(text.startIndex, offsetBy: "Linking ./".count)
+                let subString = text[head...]
+                return main.currentdirectory + String(subString)
+        }
+        .last!
+    }
+    
     public func exec(builtdBinaryPath: @escaping (String) -> Void) {
         main.currentdirectory = SwiftBulidTestValue.swiftCodePath
         let command = main.runAsync(bash: "swift build")
