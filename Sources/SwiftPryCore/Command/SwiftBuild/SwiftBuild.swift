@@ -37,7 +37,7 @@ public struct SwiftBulid {
     public func exec(builtdBinaryPath: @escaping (String) -> Void) {
         main.currentdirectory = SwiftBulidTestValue.swiftCodePath
         let command = main.runAsync(bash: "swift build")
-        command.stdout.onStringOutput {  (text) in
+        command.stdout.onStringOutput { (text) in
             print(text + "line: \(#line), file: \(#file)")
             
             if text.hasPrefix("Linking ./") {
