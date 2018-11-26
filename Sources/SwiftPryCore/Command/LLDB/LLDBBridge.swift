@@ -66,10 +66,7 @@ public struct LLDBBridge {
         let (writer, reader) = streams()
         self.reader = ReaderContainer(reader: reader)
         self.writer = WriterContainer(writer: writer)
-        self.context = CustomContext()
-        self.context.stdin = self.reader
-        self.context.stdout = self.writer
-        self.context.stderror = self.writer
+        self.context = CustomContext(main)
     }
     
     public func launch() {
