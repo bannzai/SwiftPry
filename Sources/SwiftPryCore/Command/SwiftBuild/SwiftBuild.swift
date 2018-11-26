@@ -5,6 +5,7 @@
 //  Created by Yudai.Hirose on 2018/11/22.
 //
 
+import Foundation
 import SwiftShell
 
 public struct SwiftBulidTestValue {
@@ -37,7 +38,8 @@ public struct SwiftBulid {
         main.currentdirectory = SwiftBulidTestValue.swiftCodePath
         let command = main.runAsync(bash: "swift build")
         command.stdout.onStringOutput { (text) in
-            print(text)
+            print(text + "line: \(#line), file: \(#file)")
+            
             if text.hasPrefix("Linking ./") {
                 let head = text.index(text.startIndex, offsetBy: "Linking ./".count)
                 let subString = text[head...]
@@ -45,13 +47,13 @@ public struct SwiftBulid {
             }
         }
         command.stderror.onStringOutput { (text) in
-            print(text)
+            print(text + "line: \(#line), file: \(#file)")
         }
         do {
             try command.finish()
-            main.run(bash: "rm -rf .build") // TODO: Remove
         } catch {
-            print("Can not finish process of `swift build`")
+            print(error.localizedDescription)
+            exit(2)
         }
     }
 }
