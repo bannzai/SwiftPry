@@ -57,15 +57,9 @@ extension ReaderContainer: ReadableStream {
 public struct LLDBBridge {
     let binaryPath: String
     var context: Context & CommandRunning
-    let reader: ReaderContainer
-    let writer: WriterContainer
-    
+
     public init(binaryPath: String) {
         self.binaryPath = binaryPath
-        
-        let (writer, reader) = streams()
-        self.reader = ReaderContainer(reader: reader)
-        self.writer = WriterContainer(writer: writer)
         self.context = CustomContext(main)
     }
     
