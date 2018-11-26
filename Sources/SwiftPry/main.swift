@@ -12,9 +12,19 @@ while true {
     hoge = readLine()
     if hoge != nil && bridge != nil {
         bridge.write(hoge!)
-        print("hoge: \(String(describing: hoge))")
     } else if hoge == "exit" {
         exit(1)
     }
 }
+//bridge = LLDBBridge(binaryPath: binaryPath)
+//bridge.launch()
+
+//while true {
+//    hoge = readLine()
+//    if hoge != nil && bridge != nil {
+//        bridge.write(hoge!)
+//    } else if hoge == "exit" {
+//        exit(1)
+//    }
+//}
 print("Hello, world!")

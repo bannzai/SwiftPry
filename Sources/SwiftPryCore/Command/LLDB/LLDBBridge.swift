@@ -1,7 +1,7 @@
 import Foundation
 import SwiftShell
 
-public struct WriterContainer {
+public class WriterContainer {
     let writer: WritableStream
     
     init(writer: WritableStream) {
@@ -9,18 +9,67 @@ public struct WriterContainer {
     }
 }
 
+extension WriterContainer: WritableStream {
+    public var encoding: String.Encoding {
+        get { return writer.encoding }
+        set { writer.encoding = newValue }
+    }
+    
+    public var filehandle: FileHandle {
+        return writer.filehandle
+    }
+    
+    public func write(_ x: String) {
+        Swift.print("line: \(#line), file: \(#file), content: " + x)
+    }
+    
+    public func write(data: Data) {
+        Swift.print("line: \(#line), file: \(#file), content: " + String(data: data, encoding: .utf8)!)
+    }
+}
+
+public class ReaderContainer {
+    let reader: ReadableStream
+    
+    init(reader: ReadableStream) {
+        self.reader = reader
+    }
+}
+
+extension ReaderContainer: ReadableStream {
+    public var encoding: String.Encoding {
+        get { return reader.encoding }
+        set { reader.encoding = newValue }
+    }
+    
+    public var filehandle: FileHandle {
+        return reader.filehandle
+    }
+    
+    public func read() -> String {
+        let readContent = reader.read()
+        Swift.print("line: \(#line), file: \(#file), content: " + readContent)
+        return readContent
+    }
+}
+
 
 public struct LLDBBridge {
     let binaryPath: String
     var context: Context & CommandRunning
+    let reader: ReaderContainer
     let writer: WriterContainer
     
     public init(binaryPath: String) {
         self.binaryPath = binaryPath
-        self.context = CustomContext(main)
+        
         let (writer, reader) = streams()
-        self.context.stdin = reader
+        self.reader = ReaderContainer(reader: reader)
         self.writer = WriterContainer(writer: writer)
+        self.context = CustomContext()
+        self.context.stdin = self.reader
+        self.context.stdout = self.writer
+        self.context.stderror = self.writer
     }
     
     public func launch() {
@@ -52,6 +101,6 @@ public struct LLDBBridge {
 
 extension LLDBBridge {
     public mutating func write(_ string: String) {
-        self.writer.writer.write(string)
+//        self.writer.write(string)
     }
 }
