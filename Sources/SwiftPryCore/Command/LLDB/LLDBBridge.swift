@@ -1,22 +1,16 @@
 import Foundation
 import SwiftShell
 
-public class WriterContainer {
-    let writer: WritableStream
-    
-    init(writer: WritableStream) {
-        self.writer = writer
-    }
-}
+public class WriterContainer { }
 
 extension WriterContainer: WritableStream {
     public var encoding: String.Encoding {
-        get { return writer.encoding }
-        set { writer.encoding = newValue }
+        get { return .utf8 }
+        set { print(newValue) }
     }
     
     public var filehandle: FileHandle {
-        return writer.filehandle
+        return FileHandleStream(.standardOutput, encoding: .utf8).filehandle
     }
     
     public func write(_ x: String) {
@@ -57,13 +51,16 @@ extension ReaderContainer: ReadableStream {
 public struct LLDBBridge {
     let binaryPath: String
     var context: Context & CommandRunning
-
+    var writer: WriterContainer
+    
     public init(binaryPath: String) {
         self.binaryPath = binaryPath
+        
+        self.writer = WriterContainer()
         self.context = CustomContext(main)
     }
     
-    public func launch() {
+    public mutating func launch() {
         let command = context.runAsync(bash: "lldb \(binaryPath)")
         command.stdout.onStringOutput { (text) in
             if text.contains("(lldb)") {
@@ -77,6 +74,10 @@ public struct LLDBBridge {
         }
         do {
             try command.finish()
+            self.context.stdin.write(to: &self.writer)
+            self.context.stdin.onStringOutput { (string) in
+                print(string)
+            }
         }  catch {
             print(error.localizedDescription)
             exit(2)
