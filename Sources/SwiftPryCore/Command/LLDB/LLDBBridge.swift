@@ -54,7 +54,7 @@ extension ReaderContainer: ReadableStream {
 }
 
 
-public struct LLDBBridge {
+public class LLDBBridge {
     let binaryPath: String
     var context: Context & CommandRunning
 
@@ -91,7 +91,7 @@ public struct LLDBBridge {
 }
 
 extension LLDBBridge {
-    public mutating func write(_ string: String) {
+    public func write(_ string: String) {
 //        self.writer.write(string)
     }
 }
