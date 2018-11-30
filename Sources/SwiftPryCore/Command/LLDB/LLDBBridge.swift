@@ -54,12 +54,6 @@ extension ReaderContainer: ReadableStream {
 }
 
 
-func output(_ string: String) {
-    let standardOutput = FileHandle.standardOutput
-    standardOutput.write(string)
-
-}
-
 public class LLDBBridge {
     let binaryPath: String
     var context: Context & CommandRunning
@@ -70,24 +64,23 @@ public class LLDBBridge {
     }
     
     public func launch() {
-        let command = context.run(bash: "echo hoge")
-        print("stdout: " + command.stdout)
-//        command.stdout.onStringOutput { (text) in
-//            if text.contains("(lldb)") {
-//                output("(pry)")
-//                return
-//            }
-//            output(text + "line: \(#line), file: \(#file)")
-//        }
-//        command.stderror.onStringOutput { (text) in
-//            output(text + "line: \(#line), file: \(#file)")
-//        }
-//        do {
-//            try command.finish()
-//        }  catch {
-//            output(error.localizedDescription)
-//            exit(2)
-//        }
+        let command = context.runAsync(bash: "lldb \(binaryPath)")
+        command.stdout.onStringOutput { (text) in
+            if text.contains("(lldb)") {
+                print("(pry)")
+                return
+            }
+            print(text + "line: \(#line), file: \(#file)")
+        }
+        command.stderror.onStringOutput { (text) in
+            print(text + "line: \(#line), file: \(#file)")
+        }
+        do {
+            try command.finish()
+        }  catch {
+            print(error.localizedDescription)
+            exit(2)
+        }
     }
     
     func redirect() {
