@@ -2,17 +2,21 @@ import SwiftPryCore
 import Foundation
 import SwiftShell
 
-main.run(bash: "rm -rf /Users/hiroseyuudai/develop/oss/Kuri/.build")
+//main.run(bash: "rm -rf /Users/hiroseyuudai/develop/oss/Kuri/.build")
+
+print("start")
+
+main.currentdirectory = SwiftBulidTestValue.swiftCodePath
 
 var hoge: String? = nil
-var bridge: LLDBBridge!
-SwiftBulid().exec { (binaryPath) in
-    bridge = LLDBBridge(binaryPath: binaryPath)
-}
+var bridge = LLDBBridge(binaryPath: "/Users/hiroseyuudai/develop/oss/Kuri/.build/x86_64-apple-macosx10.10/debug/Kuri")
+//SwiftBulid().exec { (binaryPath) in
+//    bridge = LLDBBridge(binaryPath: binaryPath)
+//}
 
-while bridge == nil {
-    // wait for launch lldb
-}
+//while bridge == nil {
+//    // wait for launch lldb
+//}
 
 bridge.launch()
 

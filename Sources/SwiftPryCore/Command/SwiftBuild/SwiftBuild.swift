@@ -9,7 +9,7 @@ import Foundation
 import SwiftShell
 
 public struct SwiftBulidTestValue {
-    static let swiftCodePath = "/Users/hiroseyuudai/develop/oss/Kuri"
+    public static let swiftCodePath = "/Users/hiroseyuudai/develop/oss/Kuri"
 }
 
 public struct SwiftBulid {
@@ -18,7 +18,6 @@ public struct SwiftBulid {
     }
     
     public func exec() -> String {
-        main.currentdirectory = SwiftBulidTestValue.swiftCodePath
         let output = main.run(bash: "swift build")
         return output
             .stdout
