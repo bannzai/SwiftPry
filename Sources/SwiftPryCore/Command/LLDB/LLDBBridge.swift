@@ -60,27 +60,63 @@ public class LLDBBridge {
 
     public init(binaryPath: String) {
         self.binaryPath = binaryPath
-        self.context = CustomContext(main)
+        self.context = main
     }
     
     public func launch() {
-        let command = context.runAsync(bash: "lldb \(binaryPath)")
-        command.stdout.onStringOutput { (text) in
-            if text.contains("(lldb)") {
-                print("(pry)")
-                return
-            }
-            print(text + "line: \(#line), file: \(#file)")
+        let input = main.stdin.filehandle
+        let inputPipe = Pipe()
+        let outPipe = main.stdout.filehandle
+
+        let process = Process()
+        process.launchPath = "/usr/bin/lldb"
+        process.arguments = [binaryPath]
+        process.standardInput = inputPipe
+        process.standardOutput = outPipe
+        process.standardError = main.stderror.filehandle
+        process.launch()
+        
+        input.waitForDataInBackgroundAndNotify()
+        outPipe.waitForDataInBackgroundAndNotify()
+        
+        NotificationCenter
+            .default
+            .addObserver(
+                forName: NSNotification.Name.NSFileHandleDataAvailable,
+                object: input,
+                queue: .main
+            ) { (notification) in
+                    let data = input.availableData
+                    print("Observed input pipe stream data: \(data)")
+                    switch data.isEmpty {
+                    case true:
+                        inputPipe.fileHandleForWriting.closeFile()
+                    case false:
+                        inputPipe.fileHandleForWriting.write(data)
+                        input.waitForDataInBackgroundAndNotify()
+                    }
         }
-        command.stderror.onStringOutput { (text) in
-            print(text + "line: \(#line), file: \(#file)")
+        
+        NotificationCenter
+            .default
+            .addObserver(
+                forName: NSNotification.Name.NSFileHandleDataAvailable,
+                object: outPipe,
+                queue: .main
+            ) { (notification) in
+                    let data = outPipe.availableData
+                    switch String(data: data, encoding: .utf8) {
+                    case .none:
+                        break
+                    case .some(let value):
+                        print(value, terminator: "")
+                        fflush(__stdoutp)
+                        outPipe.waitForDataInBackgroundAndNotify()
+                    }
         }
-        do {
-            try command.finish()
-        }  catch {
-            print(error.localizedDescription)
-            exit(2)
-        }
+
+        process.waitUntilExit()
+        print("process.terminationStatus: \(process.terminationStatus)")
     }
     
     func redirect() {

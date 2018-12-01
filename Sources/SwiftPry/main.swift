@@ -7,6 +7,7 @@ import SwiftShell
 print("start")
 
 main.currentdirectory = SwiftBulidTestValue.swiftCodePath
+print(main.run(bash: "tty").stdout)
 
 var hoge: String? = nil
 var bridge = LLDBBridge(binaryPath: "/Users/hiroseyuudai/develop/oss/Kuri/.build/x86_64-apple-macosx10.10/debug/Kuri")
