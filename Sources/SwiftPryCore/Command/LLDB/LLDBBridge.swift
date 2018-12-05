@@ -67,8 +67,10 @@ public class LLDBBridge {
         let input = main.stdin.filehandle
         let inputPipe = Pipe()
         let outPipe = main.stdout.filehandle
+        let errorPipe = main.stderror.filehandle
 
         let process = Process()
+
         process.launchPath = "/usr/bin/lldb"
         process.arguments = [binaryPath]
         process.standardInput = inputPipe
@@ -78,6 +80,7 @@ public class LLDBBridge {
         
         input.waitForDataInBackgroundAndNotify()
         outPipe.waitForDataInBackgroundAndNotify()
+        errorPipe.waitForDataInBackgroundAndNotify()
         
         NotificationCenter
             .default
@@ -87,14 +90,21 @@ public class LLDBBridge {
                 queue: .main
             ) { (notification) in
                     let data = input.availableData
-                    print("Observed input pipe stream data: \(data)")
-                    switch data.isEmpty {
-                    case true:
+                    print("Observed input stream data: \(data)")
+                    switch String(data: data, encoding: .utf8) {
+                    case .none:
                         inputPipe.fileHandleForWriting.closeFile()
-                    case false:
-                        inputPipe.fileHandleForWriting.write(data)
+                    case .some(let value):
+                        inputPipe.fileHandleForWriting.write(value)
                         input.waitForDataInBackgroundAndNotify()
-                    }
+                        
+                        switch value {
+                        case "\n":
+                            print("It is line break")
+                        default:
+                            print("value of \(value)")
+                        }
+                }
         }
         
         NotificationCenter
@@ -104,17 +114,38 @@ public class LLDBBridge {
                 object: outPipe,
                 queue: .main
             ) { (notification) in
-                    let data = outPipe.availableData
-                    switch String(data: data, encoding: .utf8) {
-                    case .none:
-                        break
-                    case .some(let value):
-                        print(value, terminator: "")
-                        fflush(__stdoutp)
-                        outPipe.waitForDataInBackgroundAndNotify()
-                    }
+                let data = outPipe.availableData
+                switch String(data: data, encoding: .utf8) {
+                case .none:
+                    break
+                case .some(let value):
+                    print(value)
+                    print("\n")
+                    fflush(__stdoutp)
+                    outPipe.waitForDataInBackgroundAndNotify()
+                }
         }
-
+        
+        NotificationCenter
+            .default
+            .addObserver(
+                forName: NSNotification.Name.NSFileHandleDataAvailable,
+                object: errorPipe,
+                queue: .main
+            ) { (notification) in
+                let data = errorPipe.availableData
+                print("Error!!!!!!!!!!")
+                switch String(data: data, encoding: .utf8) {
+                case .none:
+                    break
+                case .some(let value):
+                    print(value)
+                    print("\n")
+                    fflush(__stderrp)
+                    errorPipe.waitForDataInBackgroundAndNotify()
+                }
+        }
+        
         process.waitUntilExit()
         print("process.terminationStatus: \(process.terminationStatus)")
     }
