@@ -78,13 +78,13 @@ public class LLDBBridge {
         
         input.waitForDataInBackgroundAndNotify()
         outPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
-        outPipe.fileHandleForReading.writeabilityHandler = { fileHandler in
+        outPipe.fileHandleForReading.readabilityHandler = { fileHandler in
             let data = fileHandler.availableData
             if let output = String(data: data, encoding: .utf8) {
-                print("\(output)")
+                print("readabilityHandler: \(output)")
             }
         }
-        
+
         NotificationCenter
             .default
             .addObserver(
