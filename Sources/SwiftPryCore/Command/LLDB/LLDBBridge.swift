@@ -66,7 +66,7 @@ public class LLDBBridge {
     public func launch() {
         let input = main.stdin.filehandle
         let inputPipe = Pipe()
-        let outPipe = main.stdout.filehandle
+        let outPipe = Pipe()
 
         let process = Process()
         process.launchPath = "/usr/bin/lldb"
@@ -77,7 +77,13 @@ public class LLDBBridge {
         process.launch()
         
         input.waitForDataInBackgroundAndNotify()
-        outPipe.waitForDataInBackgroundAndNotify()
+        outPipe.fileHandleForReading.waitForDataInBackgroundAndNotify()
+        outPipe.fileHandleForReading.writeabilityHandler = { fileHandler in
+            let data = fileHandler.availableData
+            if let output = String(data: data, encoding: .utf8) {
+                print("\(output)")
+            }
+        }
         
         NotificationCenter
             .default
@@ -97,23 +103,6 @@ public class LLDBBridge {
                     }
         }
         
-        NotificationCenter
-            .default
-            .addObserver(
-                forName: NSNotification.Name.NSFileHandleDataAvailable,
-                object: outPipe,
-                queue: .main
-            ) { (notification) in
-                    let data = outPipe.availableData
-                    switch String(data: data, encoding: .utf8) {
-                    case .none:
-                        break
-                    case .some(let value):
-                        print(value, terminator: "")
-                        fflush(__stdoutp)
-                        outPipe.waitForDataInBackgroundAndNotify()
-                    }
-        }
 
         process.waitUntilExit()
         print("process.terminationStatus: \(process.terminationStatus)")
